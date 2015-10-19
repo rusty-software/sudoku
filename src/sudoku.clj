@@ -15,13 +15,14 @@
 
 (defn col-values [board coord]
   (let [[_ col] coord]
-    (reduce (fn [acc row]
-              (conj acc (get row col)))
+    (reduce (fn [acc row] (conj acc (get row col)))
             #{}
             board)))
 
 (defn coord-pairs [coords]
-  nil)
+  (for [row coords
+        col coords]
+    [row col]))
 
 (defn block-values [board coord]
   nil)
