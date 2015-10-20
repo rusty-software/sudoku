@@ -61,15 +61,18 @@
 (defn rows [board]
   (reduce (fn [acc row] (conj acc (set row))) [] board))
 
+(defn eq-all-values? [coll]
+  (= all-values (set coll)))
+
 (defn valid-rows? [board]
-  nil)
+  (every? eq-all-values? (rows board)))
 
 (defn cols [board]
   (let [col-tops (map #(conj [0] %) (range 0 9))]
     (reduce (fn [acc col] (conj acc (col-values board col))) [] col-tops)))
 
 (defn valid-cols? [board]
-  nil)
+  (every? eq-all-values? (cols board)))
 
 (defn blocks [board]
   (let [block-centers [[1 1] [1 4] [1 7]
@@ -78,7 +81,7 @@
     (reduce (fn [acc block-center] (conj acc (block-values board block-center))) [] block-centers)))
 
 (defn valid-blocks? [board]
-  nil)
+  (every? eq-all-values? (blocks board)))
 
 (defn valid-solution? [board]
   nil)
