@@ -20,24 +20,28 @@
             #{}
             board)))
 
-(defn coord-pairs [coords]
-  (for [rows coords
-        cols coords]
-    [rows cols]))
+(defn coord-pairs
+  ([coords]
+   (for [rows coords
+         cols coords]
+     [rows cols]))
+  ([[first-row first-col] block-width]
+   (for [row (range first-row (+ first-row block-width))
+         col (range first-col (+ first-col block-width))]
+     [row col])))
 
 (defn block-corner [[row col]]
   (let [lowerbound (fn [n] (cond
                              (< n 3) 0
-                       (< n 6) 3
-                       :else 6))
+                             (< n 6) 3
+                             :else 6))
         lrow (lowerbound row)
         lcol (lowerbound col)]
     [lrow lcol]))
 
 (defn block-values [board coord]
-  (let [lcorner (block-corner coord)
-        l (first lcorner)
-        coords (coord-pairs [l (+ 1 l) (+ 2 l)])]
+  (let [[row col] (block-corner coord)
+        coords (coord-pairs [row col] 3)]
     (set (map #(value-at board %) coords))))
 
 (defn valid-values-for [board coord]
@@ -68,7 +72,10 @@
   nil)
 
 (defn blocks [board]
-  nil)
+  (let [block-centers [[1 1] [1 4] [1 7]
+                       [4 1] [4 4] [4 7]
+                       [7 1] [7 4] [7 7]]]
+    (reduce (fn [acc block-center] (conj acc (block-values board block-center))) [] block-centers)))
 
 (defn valid-blocks? [board]
   nil)
