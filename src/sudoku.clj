@@ -55,13 +55,14 @@
   (not (contains? (set (board-values board)) 0)))
 
 (defn rows [board]
-  nil)
+  (reduce (fn [acc row] (conj acc (set row))) [] board))
 
 (defn valid-rows? [board]
   nil)
 
 (defn cols [board]
-  nil)
+  (let [col-tops (map #(conj [0] %) (range 0 9))]
+    (reduce (fn [acc col] (conj acc (col-values board col))) [] col-tops)))
 
 (defn valid-cols? [board]
   nil)
