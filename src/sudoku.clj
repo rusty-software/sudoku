@@ -48,8 +48,11 @@
                                   (block-values board coord))]
       (set/difference all-values complimentary-values))))
 
+(defn board-values [board]
+  (map #(value-at board %) (coord-pairs (range 0 9))))
+
 (defn filled? [board]
-  nil)
+  (not (contains? (set (board-values board)) 0)))
 
 (defn rows [board]
   nil)
