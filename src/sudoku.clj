@@ -1,6 +1,16 @@
 (ns sudoku
   (:require [clojure.set :as set]))
 
+(def sample-board [[5 3 0 0 7 0 0 0 0]
+                   [6 0 0 1 9 5 0 0 0]
+                   [0 9 8 0 0 0 0 6 0]
+                   [8 0 0 0 6 0 0 0 3]
+                   [4 0 0 8 0 3 0 0 1]
+                   [7 0 0 0 2 0 0 0 6]
+                   [0 6 0 0 0 0 2 8 0]
+                   [0 0 0 4 1 9 0 0 5]
+                   [0 0 0 0 8 0 0 7 9]])
+
 (def board identity)
 (def all-values #{1 2 3 4 5 6 7 8 9})
 
@@ -30,18 +40,27 @@
          col (range first-col (+ first-col block-width))]
      [row col])))
 
-(defn block-corner [[row col]]
-  (let [lowerbound (fn [n] (cond
-                             (< n 3) 0
-                             (< n 6) 3
-                             :else 6))
-        lrow (lowerbound row)
-        lcol (lowerbound col)]
+(defn block-sig-num
+  "Number of blocks in a row, in a column, and the block width"
+  [board]
+  (int (Math/sqrt (count board))))
+
+(defn block-edges [sig-num]
+  (vec (map #(* sig-num %) (range sig-num))))
+
+(defn block-corner [board [row col]]
+  (let [sig-num (block-sig-num board)
+        bounds (block-edges sig-num)
+        row-block (int (/ row sig-num))
+        col-block (int (/ col sig-num))
+        lowerbound (fn [n] (get bounds n))
+        lrow (lowerbound row-block)
+        lcol (lowerbound col-block)]
     [lrow lcol]))
 
 (defn block-values [board coord]
-  (let [[row col] (block-corner coord)
-        coords (coord-pairs [row col] 3)]
+  (let [[row col] (block-corner board coord)
+        coords (coord-pairs [row col] (block-sig-num board))]
     (set (map #(value-at board %) coords))))
 
 (defn valid-values-for [board coord]
@@ -53,7 +72,7 @@
       (set/difference all-values complimentary-values))))
 
 (defn board-values [board]
-  (map #(value-at board %) (coord-pairs (range 0 9))))
+  (map #(value-at board %) (coord-pairs (range 0 (count board)))))
 
 (defn filled? [board]
   (not (contains? (set (board-values board)) 0)))
@@ -68,17 +87,18 @@
   (every? eq-all-values? (rows board)))
 
 (defn cols [board]
-  (let [col-tops (map #(conj [0] %) (range 0 9))]
+  (let [col-tops (map #(conj [0] %) (range 0 (count board)))]
     (reduce (fn [acc col] (conj acc (col-values board col))) [] col-tops)))
 
 (defn valid-cols? [board]
   (every? eq-all-values? (cols board)))
 
 (defn blocks [board]
-  (let [block-centers [[1 1] [1 4] [1 7]
-                       [4 1] [4 4] [4 7]
-                       [7 1] [7 4] [7 7]]]
-    (reduce (fn [acc block-center] (conj acc (block-values board block-center))) [] block-centers)))
+  (let [sig-num (block-sig-num board)
+        block-corners (vec (for [rows (block-edges sig-num)
+                                 cols (block-edges sig-num)]
+                             [rows cols]))]
+    (reduce (fn [acc block-corner] (conj acc (block-values board block-corner))) [] block-corners)))
 
 (defn valid-blocks? [board]
   (every? eq-all-values? (blocks board)))
@@ -90,7 +110,7 @@
   (assoc-in board coord new-value))
 
 (defn find-empty-point [board]
-  (first (filter #(not (has-value? board %)) (coord-pairs (range 0 9)))))
+  (first (filter #(not (has-value? board %)) (coord-pairs (range 0 (count board))))))
 
 (defn solve-helper [current-board]
   (if (valid-solution? current-board)
